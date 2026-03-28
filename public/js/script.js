@@ -65,7 +65,7 @@
                     (map.file_size ? "  ·  " + formatBytes(map.file_size) : "");
 
                 const img = document.getElementById("detail-map-img");
-                img.src = `/uploads/${map.filename}`;
+                img.src = `uploads/${map.filename}`;
                 img.alt = map.name;
 
                 if (map.notes) {
@@ -131,7 +131,7 @@
                     .map(
                         (m) => `
     <div class="map-card" data-id="${m.id}" onclick="openMap('${m.id}')">
-      <img class="thumb" src="/uploads/${m.filename}" alt="${m.name}" loading="lazy">
+      <img class="thumb" src="uploads/${m.filename}" alt="${m.name}" loading="lazy">
       <div class="card-body">
         <div class="card-name" title="${m.name}">${m.name}</div>
         ${m.notes ? `<div class="card-note">${m.notes}</div>` : ""}
@@ -207,7 +207,7 @@
                 document.getElementById("modal-map-title").textContent =
                     "Edit Map Details";
                 document.getElementById("modal-map-preview").src =
-                    `/uploads/${map.filename}`;
+                    `uploads/${map.filename}`;
                 document.getElementById("modal-map-preview").style.display = "";
                 document.getElementById("modal-map-name").value = map.name;
                 document.getElementById("modal-map-notes").value =
@@ -631,13 +631,13 @@
             document.getElementById("btn-view-full").onclick = () => {
                 if (!currentMap) return;
                 document.getElementById("lightbox-img").src =
-                    `/uploads/${currentMap.filename}`;
+                    `uploads/${currentMap.filename}`;
                 document.getElementById("lightbox-cap").textContent =
                     currentMap.name;
                 document.getElementById("lightbox").classList.add("open");
             };
             document.getElementById("btn-view-newtab").onclick = () => {
-                window.open(`/uploads/${currentMap.filename}`, "_blank");
+                window.open(`uploads/${currentMap.filename}`, "_blank");
             };
             document
                 .getElementById("lightbox")
