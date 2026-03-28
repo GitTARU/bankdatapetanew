@@ -1,0 +1,17 @@
+{
+  "name": "cartotheca",
+  "version": "2.0.0",
+  "description": "Old map archive manager with PostgreSQL and road pins",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "setup-db": "node src/setup-db.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "uuid": "^13.0.0",
+    "pg": "^8.20.0",
+    "dotenv": "^17.3.1"
+  }
+}

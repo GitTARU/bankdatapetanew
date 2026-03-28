@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Bank Data Peta</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"
+            rel="stylesheet"
+        />
+        <link href="css/style.css" rel="stylesheet" />
+    </head>
+    <body>
+        <header>
+            <div class="brand" onclick="showGallery()">
+                <h1>Bank Data Peta</h1>
+                <span>Map Archive</span>
+            </div>
+            <div class="search-wrap" id="header-search">
+                <svg
+                    class="search-icon"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                >
+                    <circle cx="8.5" cy="8.5" r="5.5" />
+                    <line x1="13" y1="13" x2="18" y2="18" />
+                </svg>
+                <input
+                    type="text"
+                    id="search-input"
+                    placeholder="Search maps…"
+                    autocomplete="off"
+                />
+            </div>
+            <div class="header-right">
+                <button
+                    class="btn btn-secondary"
+                    id="btn-back"
+                    style="display: none"
+                    onclick="showGallery()"
+                >
+                    <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                    >
+                        <path d="M10 3L5 8l5 5" />
+                    </svg>
+                    Back
+                </button>
+                <button
+                    class="btn btn-primary"
+                    id="btn-add-map"
+                    onclick="document.getElementById('file-input').click()"
+                >
+                    <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                    >
+                        <path d="M10 14V4M6 8l4-4 4 4" />
+                        <path d="M3 16h14" />
+                    </svg>
+                    Add Map
+                </button>
+                <input type="file" id="file-input" accept="image/*" multiple />
+            </div>
+        </header>
+
+        <!-- ── Gallery View ── -->
+        <div id="view-gallery">
+            <div class="gallery-main">
+                <div class="ornament">— ✦ —</div>
+                <div class="stats-bar">
+                    <p id="count-label">Loading…</p>
+                </div>
+                <div
+                    id="loading-gallery"
+                    style="text-align: center; padding: 4rem"
+                >
+                    <div
+                        class="spinner"
+                        style="
+                            border-top-color: var(--accent);
+                            border-color: var(--border);
+                            width: 22px;
+                            height: 22px;
+                        "
+                    ></div>
+                </div>
+                <div id="empty-state" class="empty-state" style="display: none">
+                    <svg
+                        viewBox="0 0 80 80"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                    >
+                        <circle cx="40" cy="40" r="36" />
+                        <circle cx="40" cy="40" r="4" />
+                        <line x1="40" y1="8" x2="40" y2="22" />
+                        <line x1="40" y1="58" x2="40" y2="72" />
+                        <line x1="8" y1="40" x2="22" y2="40" />
+                        <line x1="58" y1="40" x2="72" y2="40" />
+                        <polygon
+                            points="40,16 37,28 43,28"
+                            fill="currentColor"
+                            opacity="0.5"
+                        />
+                        <polygon
+                            points="40,64 37,52 43,52"
+                            fill="currentColor"
+                            opacity="0.3"
+                        />
+                    </svg>
+                    <h2>Your archive is empty</h2>
+                    <p>
+                        Upload your first old map to begin your cartographic
+                        collection.
+                    </p>
+                    <button
+                        class="btn btn-primary"
+                        onclick="document.getElementById('file-input').click()"
+                    >
+                        Upload Maps
+                    </button>
+                </div>
+                <div id="gallery-grid" class="grid" style="display: none"></div>
+                <div id="no-results" class="no-results" style="display: none">
+                    No maps match your search.
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Detail View ── -->
+        <div id="view-detail">
+            <div class="detail-main">
+                <div class="detail-header">
+                    <div class="detail-header-left">
+                        <div class="detail-title" id="detail-title">—</div>
+                        <div class="detail-subtitle" id="detail-subtitle"></div>
+                    </div>
+                    <div class="detail-header-right">
+                        <button
+                            class="btn btn-secondary"
+                            id="btn-edit-map-meta"
+                        >
+                            Edit details
+                        </button>
+                        <button class="btn btn-secondary" id="btn-view-full">
+                            <svg
+                                width="13"
+                                height="13"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            >
+                                <path
+                                    d="M2 2h5M2 2v5M14 2h-5M14 2v5M2 14h5M2 14v-5M14 14h-5M14 14v-5"
+                                />
+                            </svg>
+                            Full view
+                        </button>
+                        <button class="btn btn-secondary" id="btn-view-newtab">
+                            <svg
+                                width="13"
+                                height="13"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            >
+                                <path
+                                    d="M2 2h5M2 2v5M14 2h-5M14 2v5M2 14h5M2 14v-5M14 14h-5M14 14v-5"
+                                />
+                            </svg>
+                            View New Tab
+                        </button>
+                    </div>
+                </div>
+
+                <div class="detail-layout">
+                    <!-- Map with pins overlay -->
+                    <div>
+                        <div
+                            class="map-canvas-wrap view-mode"
+                            id="map-canvas-wrap"
+                        >
+                            <img id="detail-map-img" src="" alt="" />
+                            <div class="pin-mode-banner" id="pin-mode-banner">
+                                Click on the map to drop a pin
+                            </div>
+                            <svg
+                                class="pins-overlay"
+                                id="pins-overlay"
+                                xmlns="http://www.w3.org/2000/svg"
+                            ></svg>
+                            <div class="pin-tooltip" id="pin-tooltip"></div>
+                        </div>
+                    </div>
+
+                    <!-- Side panel -->
+                    <div class="side-panel">
+                        <!-- Pin controls -->
+                        <div class="panel-section">
+                            <h3>Road Pins</h3>
+                            <button
+                                class="pin-mode-toggle"
+                                id="pin-mode-toggle"
+                                onclick="togglePinMode()"
+                            >
+                                <span>Drop a new pin</span>
+                                <span class="toggle-dot"></span>
+                            </button>
+                            <div class="pin-list" id="pin-list">
+                                <div class="pin-empty">
+                                    No pins yet — click "Drop a new pin" then
+                                    click on the map.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Map notes -->
+                        <div
+                            class="panel-section"
+                            id="map-notes-section"
+                            style="display: none"
+                        >
+                            <h3>Notes</h3>
+                            <div class="map-notes-box" id="map-notes-box"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Upload / Edit Map Modal ── -->
+        <div class="modal-overlay" id="modal-map">
+            <div class="modal">
+                <h2 id="modal-map-title">Add Map to Archive</h2>
+                <img
+                    id="modal-map-preview"
+                    class="modal-img-preview"
+                    src=""
+                    alt=""
+                    style="display: none"
+                />
+                <div class="upload-bar" id="upload-bar">
+                    <label>Uploading…</label>
+                    <progress
+                        id="upload-progress"
+                        value="0"
+                        max="100"
+                    ></progress>
+                </div>
+                <div class="form-field">
+                    <label>Name</label>
+                    <input
+                        type="text"
+                        id="modal-map-name"
+                        placeholder="e.g. Europe 1742 — Cassini"
+                    />
+                </div>
+                <div class="form-field">
+                    <label>Notes</label>
+                    <textarea
+                        id="modal-map-notes"
+                        placeholder="Provenance, cartographer, observations…"
+                    ></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="btn-modal-map-cancel">
+                        Cancel
+                    </button>
+                    <button class="btn-save" id="btn-modal-map-save">
+                        Save to Archive
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Pin Modal ── -->
+        <div class="modal-overlay" id="modal-pin">
+            <div class="modal">
+                <h2 id="modal-pin-title">Name this road</h2>
+                <div class="form-field">
+                    <label>Road Name</label>
+                    <input
+                        type="text"
+                        id="modal-pin-name"
+                        placeholder="e.g. Via Appia, Silk Road…"
+                    />
+                </div>
+                <div class="form-field">
+                    <label>Notes</label>
+                    <textarea
+                        id="modal-pin-notes"
+                        placeholder="Historical significance, condition, era…"
+                    ></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="btn-modal-pin-cancel">
+                        Cancel
+                    </button>
+                    <button class="btn-save" id="btn-modal-pin-save">
+                        Save Pin
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Lightbox ── -->
+        <div class="lightbox" id="lightbox">
+            <button
+                class="lightbox-close"
+                onclick="
+                    document.getElementById('lightbox').classList.remove('open')
+                "
+            >
+                ✕
+            </button>
+            <img id="lightbox-img" src="" alt="" />
+            <div class="lightbox-cap" id="lightbox-cap"></div>
+        </div>
+
+        <div id="toast"></div>
+        <script src="js/script.js"></script>
+    </body>
+</html>
