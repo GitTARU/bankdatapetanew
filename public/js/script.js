@@ -96,8 +96,8 @@
 
                 try {
                     const url = q
-                        ? `/api/maps?q=${encodeURIComponent(q)}`
-                        : "/api/maps";
+                        ? `api/maps?q=${encodeURIComponent(q)}`
+                        : "api/maps";
                     const res = await fetch(url);
                     if (!res.ok) throw new Error();
                     allMaps = await res.json();
@@ -156,7 +156,7 @@
 
             async function openMap(id) {
                 try {
-                    const res = await fetch(`/api/maps/${id}`);
+                    const res = await fetch(`api/maps/${id}`);
                     const map = await res.json();
                     showDetail(map);
                 } catch {
@@ -237,7 +237,7 @@
                         setLoading(btn, true);
                         try {
                             const res = await fetch(
-                                `/api/maps/${editingMapId}`,
+                                `api/maps/${editingMapId}`,
                                 {
                                     method: "PUT",
                                     headers: {
@@ -284,7 +284,7 @@
                         formData.append("notes", notes);
 
                         const xhr = new XMLHttpRequest();
-                        xhr.open("POST", "/api/maps");
+                        xhr.open("POST", "api/maps");
                         xhr.upload.onprogress = (e) => {
                             if (e.lengthComputable)
                                 document.getElementById(
@@ -341,7 +341,7 @@
                 )
                     return;
                 try {
-                    const res = await fetch(`/api/maps/${id}`, {
+                    const res = await fetch(`api/maps/${id}`, {
                         method: "DELETE",
                     });
                     if (!res.ok) throw new Error();
@@ -362,7 +362,7 @@
             async function loadPins() {
                 if (!currentMap) return;
                 try {
-                    const res = await fetch(`/api/maps/${currentMap.id}/pins`);
+                    const res = await fetch(`api/maps/${currentMap.id}/pins`);
                     currentPins = await res.json();
                 } catch {
                     currentPins = [];
@@ -539,7 +539,7 @@
                     try {
                         if (editingPinId) {
                             const res = await fetch(
-                                `/api/maps/${currentMap.id}/pins/${editingPinId}`,
+                                `api/maps/${currentMap.id}/pins/${editingPinId}`,
                                 {
                                     method: "PUT",
                                     headers: {
@@ -552,7 +552,7 @@
                             toast("Pin updated");
                         } else {
                             const res = await fetch(
-                                `/api/maps/${currentMap.id}/pins`,
+                                `api/maps/${currentMap.id}/pins`,
                                 {
                                     method: "POST",
                                     headers: {
@@ -610,7 +610,7 @@
                 if (!confirm(`Remove pin for "${pin?.road_name}"?`)) return;
                 try {
                     const res = await fetch(
-                        `/api/maps/${currentMap.id}/pins/${id}`,
+                        `api/maps/${currentMap.id}/pins/${id}`,
                         { method: "DELETE" },
                     );
                     if (!res.ok) throw new Error();
