@@ -691,12 +691,15 @@
             // ── Search ──
             document
                 .getElementById("search-input")
-                .addEventListener("input", (e) => {
-                    clearTimeout(searchTimer);
-                    searchTimer = setTimeout(
-                        () => loadGallery(e.target.value.trim()),
-                        500,
-                    );
+                .addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
+                      loadGallery(e.target.value.trim())
+                    }
+                    // clearTimeout(searchTimer);
+                    // searchTimer = setTimeout(
+                    //     () => loadGallery(e.target.value.trim()),
+                    //     500,
+                    // );
                 });
 
             // ── Re-render pins on image resize ──
