@@ -1,0 +1,2026 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Cartotheca</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            :root {
+                --ink: #2a1f0e;
+                --ink-muted: #6b5a44;
+                --ink-faint: #a8957d;
+                --parchment: #f5edd8;
+                --parchment-dark: #e8d9bb;
+                --parchment-darker: #d9c89e;
+                --border: #c9b48a;
+                --border-light: #ddd0b0;
+                --accent: #7a3b1e;
+                --accent-light: #c4622d;
+                --gold: #a07830;
+                --pin-color: #c4622d;
+                --pin-active: #7a3b1e;
+                --shadow: rgba(42, 31, 14, 0.18);
+            }
+
+            body {
+                background: var(--parchment);
+                color: var(--ink);
+                font-family: "Spectral", Georgia, serif;
+                min-height: 100vh;
+            }
+
+            /* ── Header ── */
+            header {
+                background: var(--parchment-dark);
+                border-bottom: 2px solid var(--border);
+                padding: 0 2rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1.5rem;
+                height: 68px;
+                position: sticky;
+                top: 0;
+                z-index: 200;
+            }
+            .brand {
+                display: flex;
+                align-items: baseline;
+                gap: 10px;
+                flex-shrink: 0;
+                cursor: pointer;
+            }
+            .brand h1 {
+                font-family: "IM Fell English", Georgia, serif;
+                font-size: 1.5rem;
+                font-weight: 400;
+                color: var(--accent);
+            }
+            .brand span {
+                font-size: 0.75rem;
+                color: var(--ink-muted);
+                font-style: italic;
+            }
+
+            .search-wrap {
+                flex: 1;
+                max-width: 380px;
+                position: relative;
+            }
+            .search-wrap input {
+                width: 100%;
+                background: var(--parchment);
+                border: 1px solid var(--border);
+                border-radius: 3px;
+                padding: 7px 12px 7px 34px;
+                font-family: "Spectral", Georgia, serif;
+                font-size: 0.88rem;
+                color: var(--ink);
+                outline: none;
+            }
+            .search-wrap input::placeholder {
+                color: var(--ink-faint);
+            }
+            .search-wrap input:focus {
+                border-color: var(--gold);
+            }
+            .search-icon {
+                position: absolute;
+                left: 9px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 15px;
+                height: 15px;
+                color: var(--ink-faint);
+                pointer-events: none;
+            }
+
+            .header-right {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-shrink: 0;
+            }
+
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                border-radius: 3px;
+                padding: 7px 14px;
+                font-family: "Spectral", Georgia, serif;
+                font-size: 0.83rem;
+                cursor: pointer;
+                transition:
+                    background 0.18s,
+                    color 0.18s;
+                border: none;
+            }
+            .btn-primary {
+                background: var(--accent);
+                color: var(--parchment);
+            }
+            .btn-primary:hover {
+                background: var(--accent-light);
+            }
+            .btn-secondary {
+                background: transparent;
+                border: 1px solid var(--border);
+                color: var(--ink-muted);
+            }
+            .btn-secondary:hover {
+                background: var(--parchment-dark);
+            }
+            .btn:disabled {
+                opacity: 0.55;
+                cursor: not-allowed;
+            }
+            #file-input {
+                display: none;
+            }
+
+            /* ── Views ── */
+            #view-gallery,
+            #view-detail {
+                display: none;
+            }
+            #view-gallery.active,
+            #view-detail.active {
+                display: block;
+            }
+
+            /* ── Gallery ── */
+            .gallery-main {
+                padding: 1.75rem 2rem;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .ornament {
+                text-align: center;
+                color: var(--gold);
+                font-size: 1.1rem;
+                letter-spacing: 0.4em;
+                margin-bottom: 1.4rem;
+                opacity: 0.45;
+            }
+            .stats-bar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 1.4rem;
+                padding-bottom: 0.7rem;
+                border-bottom: 1px solid var(--border-light);
+            }
+            .stats-bar p {
+                font-size: 0.8rem;
+                color: var(--ink-muted);
+                font-style: italic;
+            }
+            .stats-bar p strong {
+                color: var(--ink);
+                font-style: normal;
+            }
+
+            .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 1.2rem;
+            }
+
+            .map-card {
+                background: var(--parchment-dark);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                overflow: hidden;
+                cursor: pointer;
+                transition:
+                    transform 0.18s,
+                    box-shadow 0.18s,
+                    border-color 0.18s;
+                position: relative;
+                contain: layout style;
+            }
+            .map-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 24px var(--shadow);
+                border-color: var(--gold);
+            }
+            .map-card .thumb {
+                width: 100%;
+                aspect-ratio: 4/3;
+                object-fit: cover;
+                display: block;
+                background: var(--parchment-darker);
+                will-change: auto;
+            }
+            .card-body {
+                padding: 9px 11px 11px;
+            }
+            .card-name {
+                font-size: 0.84rem;
+                font-weight: 500;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                margin-bottom: 3px;
+            }
+            .card-note {
+                font-size: 0.73rem;
+                color: var(--ink-muted);
+                font-style: italic;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                line-height: 1.5;
+            }
+            .card-meta {
+                font-size: 0.68rem;
+                color: var(--ink-faint);
+                margin-top: 5px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .pin-badge {
+                background: var(--accent);
+                color: var(--parchment);
+                border-radius: 10px;
+                padding: 1px 7px;
+                font-size: 0.67rem;
+                font-style: normal;
+            }
+
+            .card-actions {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                display: flex;
+                gap: 3px;
+                opacity: 0;
+                transition: opacity 0.15s;
+            }
+            .map-card:hover .card-actions {
+                opacity: 1;
+            }
+            .card-btn {
+                width: 26px;
+                height: 26px;
+                border-radius: 3px;
+                border: none;
+                background: rgba(245, 237, 216, 0.93);
+                color: var(--ink-muted);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition:
+                    background 0.15s,
+                    color 0.15s;
+            }
+            .card-btn:hover {
+                background: var(--accent);
+                color: var(--parchment);
+            }
+            .card-btn.danger:hover {
+                background: #8b1a1a;
+                color: #fcebeb;
+            }
+            .card-btn svg {
+                width: 13px;
+                height: 13px;
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 5rem 2rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+            .empty-state svg {
+                width: 68px;
+                height: 68px;
+                opacity: 0.22;
+            }
+            .empty-state h2 {
+                font-family: "IM Fell English", Georgia, serif;
+                font-size: 1.35rem;
+                font-weight: 400;
+                color: var(--ink-muted);
+            }
+            .empty-state p {
+                color: var(--ink-faint);
+                font-size: 0.88rem;
+                max-width: 280px;
+                line-height: 1.7;
+            }
+
+            .no-results {
+                text-align: center;
+                padding: 4rem;
+                color: var(--ink-faint);
+                font-style: italic;
+            }
+
+            /* ── Detail view ── */
+            .detail-main {
+                max-width: 1300px;
+                margin: 0 auto;
+                padding: 1.5rem 2rem;
+            }
+
+            .detail-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1rem;
+                margin-bottom: 1.25rem;
+                padding-bottom: 1rem;
+                border-bottom: 1px solid var(--border-light);
+            }
+            .detail-header-left {
+                flex: 1;
+                min-width: 0;
+            }
+            .detail-title {
+                font-family: "IM Fell English", Georgia, serif;
+                font-size: 1.6rem;
+                font-weight: 400;
+                color: var(--accent);
+                line-height: 1.2;
+            }
+            .detail-subtitle {
+                font-size: 0.8rem;
+                color: var(--ink-faint);
+                margin-top: 4px;
+                font-style: italic;
+            }
+            .detail-header-right {
+                display: flex;
+                gap: 8px;
+                flex-shrink: 0;
+            }
+
+            .detail-layout {
+                display: grid;
+                grid-template-columns: 1fr 320px;
+                gap: 1.5rem;
+                align-items: start;
+            }
+
+            /* ── Map canvas with pins ── */
+            .map-canvas-wrap {
+                position: relative;
+                background: var(--parchment-darker);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                overflow: hidden;
+                cursor: crosshair;
+                user-select: none;
+            }
+            .map-canvas-wrap.view-mode {
+                cursor: default;
+            }
+            .map-canvas-wrap img {
+                display: block;
+                width: 100%;
+                height: auto;
+                pointer-events: none;
+            }
+
+            .pin-mode-banner {
+                position: absolute;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--accent);
+                color: var(--parchment);
+                padding: 5px 14px;
+                border-radius: 20px;
+                font-size: 0.78rem;
+                pointer-events: none;
+                white-space: nowrap;
+                opacity: 0;
+                transition: opacity 0.2s;
+            }
+            .pin-mode-banner.visible {
+                opacity: 1;
+            }
+
+            /* SVG overlay for pins */
+            .pins-overlay {
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+            }
+            .pins-overlay.pin-mode {
+                pointer-events: all;
+            }
+
+            .pin-group {
+                cursor: pointer;
+                pointer-events: all;
+            }
+            .pin-group:hover .pin-dot {
+                fill: var(--pin-active);
+                r: 9;
+            }
+            .pin-group.active .pin-dot {
+                fill: var(--pin-active);
+            }
+
+            .pin-dot {
+                fill: var(--pin-color);
+                transition: r 0.15s;
+                r: 7;
+            }
+            .pin-ring {
+                fill: none;
+                stroke: var(--parchment);
+                stroke-width: 2;
+                r: 7;
+            }
+            .pin-number {
+                fill: var(--parchment);
+                font-family: "Spectral", Georgia, serif;
+                font-size: 9px;
+                font-weight: 500;
+                dominant-baseline: central;
+                text-anchor: middle;
+                pointer-events: none;
+            }
+
+            /* Tooltip on pin hover */
+            .pin-tooltip {
+                position: absolute;
+                background: var(--ink);
+                color: var(--parchment);
+                padding: 5px 10px;
+                border-radius: 3px;
+                font-size: 0.75rem;
+                white-space: nowrap;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.15s;
+                z-index: 50;
+                transform: translate(-50%, -110%);
+            }
+            .pin-tooltip.show {
+                opacity: 1;
+            }
+
+            /* ── Side panel ── */
+            .side-panel {
+            }
+
+            .panel-section {
+                margin-bottom: 1.25rem;
+            }
+            .panel-section h3 {
+                font-family: "IM Fell English", Georgia, serif;
+                font-size: 1rem;
+                font-weight: 400;
+                color: var(--accent);
+                margin-bottom: 0.75rem;
+                padding-bottom: 5px;
+                border-bottom: 1px solid var(--border-light);
+            }
+
+            /* Pin mode toggle */
+            .pin-mode-toggle {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: var(--parchment-dark);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                padding: 10px 14px;
+                font-family: "Spectral", Georgia, serif;
+                font-size: 0.85rem;
+                color: var(--ink);
+                cursor: pointer;
+                transition:
+                    background 0.18s,
+                    border-color 0.18s;
+                margin-bottom: 0.75rem;
+            }
+            .pin-mode-toggle:hover {
+                border-color: var(--gold);
+            }
+            .pin-mode-toggle.active {
+                background: var(--accent);
+                color: var(--parchment);
+                border-color: var(--accent);
+            }
+
+            .toggle-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: var(--border);
+                transition: background 0.18s;
+                flex-shrink: 0;
+            }
+            .pin-mode-toggle.active .toggle-dot {
+                background: var(--parchment);
+            }
+
+            /* Pin list */
+            .pin-list {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                max-height: 420px;
+                overflow-y: auto;
+            }
+            .pin-item {
+                background: var(--parchment-dark);
+                border: 1px solid var(--border-light);
+                border-radius: 4px;
+                padding: 8px 10px;
+                cursor: pointer;
+                transition:
+                    border-color 0.15s,
+                    background 0.15s;
+                display: flex;
+                align-items: flex-start;
+                gap: 9px;
+            }
+            .pin-item:hover {
+                border-color: var(--gold);
+            }
+            .pin-item.active {
+                border-color: var(--accent);
+                background: #f0e4d0;
+            }
+            .pin-num {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: var(--pin-color);
+                color: var(--parchment);
+                font-size: 0.65rem;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                margin-top: 1px;
+            }
+            .pin-item.active .pin-num {
+                background: var(--pin-active);
+            }
+            .pin-info {
+                flex: 1;
+                min-width: 0;
+            }
+            .pin-road {
+                font-size: 0.83rem;
+                font-weight: 500;
+                color: var(--ink);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .pin-notes-text {
+                font-size: 0.72rem;
+                color: var(--ink-muted);
+                font-style: italic;
+                margin-top: 2px;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+            }
+            .pin-actions {
+                display: flex;
+                gap: 3px;
+                flex-shrink: 0;
+            }
+            .pin-action-btn {
+                width: 22px;
+                height: 22px;
+                border: none;
+                background: transparent;
+                color: var(--ink-faint);
+                cursor: pointer;
+                border-radius: 2px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition:
+                    background 0.12s,
+                    color 0.12s;
+            }
+            .pin-action-btn:hover {
+                background: var(--parchment-darker);
+                color: var(--ink);
+            }
+            .pin-action-btn.danger:hover {
+                color: #8b1a1a;
+            }
+            .pin-action-btn svg {
+                width: 12px;
+                height: 12px;
+            }
+
+            .pin-empty {
+                font-size: 0.8rem;
+                color: var(--ink-faint);
+                font-style: italic;
+                text-align: center;
+                padding: 1.5rem 0;
+            }
+
+            /* Map info panel */
+            .map-notes-box {
+                font-size: 0.82rem;
+                color: var(--ink-muted);
+                font-style: italic;
+                line-height: 1.6;
+            }
+
+            /* ── Pin form modal ── */
+            .modal-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(42, 31, 14, 0.55);
+                z-index: 300;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+            }
+            .modal-overlay.open {
+                display: flex;
+            }
+            .modal {
+                background: var(--parchment);
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                width: 100%;
+                max-width: 480px;
+                padding: 1.4rem;
+            }
+            .modal h2 {
+                font-family: "IM Fell English", Georgia, serif;
+                font-size: 1.15rem;
+                font-weight: 400;
+                color: var(--accent);
+                margin-bottom: 1.1rem;
+            }
+            .modal-img-preview {
+                width: 100%;
+                max-height: 260px;
+                object-fit: contain;
+                background: var(--parchment-darker);
+                border: 1px solid var(--border-light);
+                border-radius: 3px;
+                margin-bottom: 1.1rem;
+            }
+            .form-field {
+                margin-bottom: 0.9rem;
+            }
+            .form-field label {
+                display: block;
+                font-size: 0.75rem;
+                font-weight: 500;
+                color: var(--ink-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                margin-bottom: 4px;
+            }
+            .form-field input,
+            .form-field textarea {
+                width: 100%;
+                background: var(--parchment);
+                border: 1px solid var(--border);
+                border-radius: 3px;
+                padding: 7px 9px;
+                font-family: "Spectral", Georgia, serif;
+                font-size: 0.88rem;
+                color: var(--ink);
+                outline: none;
+            }
+            .form-field textarea {
+                resize: vertical;
+                min-height: 68px;
+            }
+            .form-field input:focus,
+            .form-field textarea:focus {
+                border-color: var(--gold);
+            }
+
+            .upload-bar {
+                margin-bottom: 1rem;
+                display: none;
+            }
+            .upload-bar label {
+                font-size: 0.73rem;
+                color: var(--ink-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                display: block;
+                margin-bottom: 5px;
+            }
+            progress {
+                width: 100%;
+                height: 5px;
+                border-radius: 3px;
+                border: none;
+                background: var(--parchment-darker);
+            }
+            progress::-webkit-progress-bar {
+                background: var(--parchment-darker);
+                border-radius: 3px;
+            }
+            progress::-webkit-progress-value {
+                background: var(--accent);
+                border-radius: 3px;
+            }
+
+            .modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+                margin-top: 1.1rem;
+            }
+            .modal-actions .btn-save {
+                background: var(--accent);
+                border: none;
+                border-radius: 3px;
+                padding: 7px 18px;
+                font-family: "Spectral", Georgia, serif;
+                font-size: 0.83rem;
+                color: var(--parchment);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 7px;
+            }
+            .modal-actions .btn-save:hover:not(:disabled) {
+                background: var(--accent-light);
+            }
+            .modal-actions .btn-save:disabled {
+                opacity: 0.55;
+                cursor: not-allowed;
+            }
+
+            /* ── Toast ── */
+            #toast {
+                position: fixed;
+                bottom: 1.25rem;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 9px 18px;
+                border-radius: 4px;
+                font-size: 0.82rem;
+                z-index: 999;
+                opacity: 0;
+                transition: opacity 0.22s;
+                pointer-events: none;
+                border: 1px solid transparent;
+                white-space: nowrap;
+            }
+            #toast.show {
+                opacity: 1;
+            }
+            #toast.success {
+                background: #eaf3de;
+                color: #3b6d11;
+                border-color: #c0dd97;
+            }
+            #toast.error {
+                background: #fcebeb;
+                color: #a32d2d;
+                border-color: #f09595;
+            }
+
+            /* ── Spinner ── */
+            .spinner {
+                display: inline-block;
+                width: 15px;
+                height: 15px;
+                border: 2px solid rgba(255, 255, 255, 0.4);
+                border-top-color: var(--parchment);
+                border-radius: 50%;
+                animation: spin 0.7s linear infinite;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* ── Lightbox ── */
+            .lightbox {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(16, 11, 4, 0.92);
+                z-index: 400;
+                align-items: center;
+                justify-content: center;
+                padding: 1.5rem;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            .lightbox.open {
+                display: flex;
+            }
+            .lightbox img {
+                max-width: 100%;
+                max-height: 85vh;
+                object-fit: contain;
+                border: 1px solid var(--border);
+                border-radius: 3px;
+            }
+            .lightbox-cap {
+                color: var(--parchment-dark);
+                font-style: italic;
+                font-size: 0.85rem;
+                opacity: 0.7;
+            }
+            .lightbox-close {
+                position: fixed;
+                top: 0.9rem;
+                right: 1.1rem;
+                background: none;
+                border: none;
+                color: var(--parchment);
+                font-size: 1.7rem;
+                cursor: pointer;
+                opacity: 0.6;
+                line-height: 1;
+            }
+            .lightbox-close:hover {
+                opacity: 1;
+            }
+
+            @media (max-width: 900px) {
+                .detail-layout {
+                    grid-template-columns: 1fr;
+                }
+                .side-panel {
+                    order: -1;
+                }
+            }
+            @media (max-width: 600px) {
+                header {
+                    padding: 0 1rem;
+                }
+                .brand span {
+                    display: none;
+                }
+                .gallery-main,
+                .detail-main {
+                    padding: 1rem;
+                }
+                .grid {
+                    grid-template-columns: repeat(
+                        auto-fill,
+                        minmax(150px, 1fr)
+                    );
+                    gap: 0.75rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="brand" onclick="showGallery()">
+                <h1>Cartotheca</h1>
+                <span>Map Archive</span>
+            </div>
+            <div class="search-wrap" id="header-search">
+                <svg
+                    class="search-icon"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                >
+                    <circle cx="8.5" cy="8.5" r="5.5" />
+                    <line x1="13" y1="13" x2="18" y2="18" />
+                </svg>
+                <input
+                    type="text"
+                    id="search-input"
+                    placeholder="Search maps…"
+                    autocomplete="off"
+                />
+            </div>
+            <div class="header-right">
+                <button
+                    class="btn btn-secondary"
+                    id="btn-back"
+                    style="display: none"
+                    onclick="showGallery()"
+                >
+                    <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.6"
+                    >
+                        <path d="M10 3L5 8l5 5" />
+                    </svg>
+                    Back
+                </button>
+                <button
+                    class="btn btn-primary"
+                    id="btn-add-map"
+                    onclick="document.getElementById('file-input').click()"
+                >
+                    <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                    >
+                        <path d="M10 14V4M6 8l4-4 4 4" />
+                        <path d="M3 16h14" />
+                    </svg>
+                    Add Map
+                </button>
+                <input type="file" id="file-input" accept="image/*" multiple />
+            </div>
+        </header>
+
+        <!-- ── Gallery View ── -->
+        <div id="view-gallery">
+            <div class="gallery-main">
+                <div class="ornament">— ✦ —</div>
+                <div class="stats-bar">
+                    <p id="count-label">Loading…</p>
+                </div>
+                <div
+                    id="loading-gallery"
+                    style="text-align: center; padding: 4rem"
+                >
+                    <div
+                        class="spinner"
+                        style="
+                            border-top-color: var(--accent);
+                            border-color: var(--border);
+                            width: 22px;
+                            height: 22px;
+                        "
+                    ></div>
+                </div>
+                <div id="empty-state" class="empty-state" style="display: none">
+                    <svg
+                        viewBox="0 0 80 80"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                    >
+                        <circle cx="40" cy="40" r="36" />
+                        <circle cx="40" cy="40" r="4" />
+                        <line x1="40" y1="8" x2="40" y2="22" />
+                        <line x1="40" y1="58" x2="40" y2="72" />
+                        <line x1="8" y1="40" x2="22" y2="40" />
+                        <line x1="58" y1="40" x2="72" y2="40" />
+                        <polygon
+                            points="40,16 37,28 43,28"
+                            fill="currentColor"
+                            opacity="0.5"
+                        />
+                        <polygon
+                            points="40,64 37,52 43,52"
+                            fill="currentColor"
+                            opacity="0.3"
+                        />
+                    </svg>
+                    <h2>Your archive is empty</h2>
+                    <p>
+                        Upload your first old map to begin your cartographic
+                        collection.
+                    </p>
+                    <button
+                        class="btn btn-primary"
+                        onclick="document.getElementById('file-input').click()"
+                    >
+                        Upload Maps
+                    </button>
+                </div>
+                <div id="gallery-grid" class="grid" style="display: none"></div>
+                <div id="no-results" class="no-results" style="display: none">
+                    No maps match your search.
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Detail View ── -->
+        <div id="view-detail">
+            <div class="detail-main">
+                <div class="detail-header">
+                    <div class="detail-header-left">
+                        <div class="detail-title" id="detail-title">—</div>
+                        <div class="detail-subtitle" id="detail-subtitle"></div>
+                    </div>
+                    <div class="detail-header-right">
+                        <button
+                            class="btn btn-secondary"
+                            id="btn-edit-map-meta"
+                        >
+                            Edit details
+                        </button>
+                        <button class="btn btn-secondary" id="btn-view-full">
+                            <svg
+                                width="13"
+                                height="13"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            >
+                                <path
+                                    d="M2 2h5M2 2v5M14 2h-5M14 2v5M2 14h5M2 14v-5M14 14h-5M14 14v-5"
+                                />
+                            </svg>
+                            Full view
+                        </button>
+                    </div>
+                </div>
+
+                <div class="detail-layout">
+                    <!-- Map with pins overlay -->
+                    <div>
+                        <div
+                            class="map-canvas-wrap view-mode"
+                            id="map-canvas-wrap"
+                        >
+                            <img id="detail-map-img" src="" alt="" />
+                            <div class="pin-mode-banner" id="pin-mode-banner">
+                                Click on the map to drop a pin
+                            </div>
+                            <svg
+                                class="pins-overlay"
+                                id="pins-overlay"
+                                xmlns="http://www.w3.org/2000/svg"
+                            ></svg>
+                            <div class="pin-tooltip" id="pin-tooltip"></div>
+                        </div>
+                    </div>
+
+                    <!-- Side panel -->
+                    <div class="side-panel">
+                        <!-- Pin controls -->
+                        <div class="panel-section">
+                            <h3>Road Pins</h3>
+                            <button
+                                class="pin-mode-toggle"
+                                id="pin-mode-toggle"
+                                onclick="togglePinMode()"
+                            >
+                                <span>Drop a new pin</span>
+                                <span class="toggle-dot"></span>
+                            </button>
+                            <div class="pin-list" id="pin-list">
+                                <div class="pin-empty">
+                                    No pins yet — click "Drop a new pin" then
+                                    click on the map.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Map notes -->
+                        <div
+                            class="panel-section"
+                            id="map-notes-section"
+                            style="display: none"
+                        >
+                            <h3>Notes</h3>
+                            <div class="map-notes-box" id="map-notes-box"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Upload / Edit Map Modal ── -->
+        <div class="modal-overlay" id="modal-map">
+            <div class="modal">
+                <h2 id="modal-map-title">Add Map to Archive</h2>
+                <img
+                    id="modal-map-preview"
+                    class="modal-img-preview"
+                    src=""
+                    alt=""
+                    style="display: none"
+                />
+                <div class="upload-bar" id="upload-bar">
+                    <label>Uploading…</label>
+                    <progress
+                        id="upload-progress"
+                        value="0"
+                        max="100"
+                    ></progress>
+                </div>
+                <div class="form-field">
+                    <label>Name</label>
+                    <input
+                        type="text"
+                        id="modal-map-name"
+                        placeholder="e.g. Europe 1742 — Cassini"
+                    />
+                </div>
+                <div class="form-field">
+                    <label>Notes</label>
+                    <textarea
+                        id="modal-map-notes"
+                        placeholder="Provenance, cartographer, observations…"
+                    ></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="btn-modal-map-cancel">
+                        Cancel
+                    </button>
+                    <button class="btn-save" id="btn-modal-map-save">
+                        Save to Archive
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Pin Modal ── -->
+        <div class="modal-overlay" id="modal-pin">
+            <div class="modal">
+                <h2 id="modal-pin-title">Name this road</h2>
+                <div class="form-field">
+                    <label>Road Name</label>
+                    <input
+                        type="text"
+                        id="modal-pin-name"
+                        placeholder="e.g. Via Appia, Silk Road…"
+                    />
+                </div>
+                <div class="form-field">
+                    <label>Notes</label>
+                    <textarea
+                        id="modal-pin-notes"
+                        placeholder="Historical significance, condition, era…"
+                    ></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="btn-modal-pin-cancel">
+                        Cancel
+                    </button>
+                    <button class="btn-save" id="btn-modal-pin-save">
+                        Save Pin
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Lightbox ── -->
+        <div class="lightbox" id="lightbox">
+            <button
+                class="lightbox-close"
+                onclick="
+                    document.getElementById('lightbox').classList.remove('open')
+                "
+            >
+                ✕
+            </button>
+            <img id="lightbox-img" src="" alt="" />
+            <div class="lightbox-cap" id="lightbox-cap"></div>
+        </div>
+
+        <div id="toast"></div>
+
+        <script>
+            // ── State ──
+            let allMaps = [];
+            let currentMap = null;
+            let currentPins = [];
+            let pinModeActive = false;
+            let pendingPin = null; // { x_pct, y_pct } waiting for name
+            let editingPinId = null;
+            let pendingUploadFiles = [];
+            let editingMapId = null;
+            let searchTimer = null;
+
+            // ── Toast ──
+            function toast(msg, type = "success") {
+                const el = document.getElementById("toast");
+                el.textContent = msg;
+                el.className = `show ${type}`;
+                clearTimeout(el._t);
+                el._t = setTimeout(() => el.classList.remove("show"), 3000);
+            }
+
+            // ── Spinner helper ──
+            function setLoading(btn, loading, label = "Saving…") {
+                if (loading) {
+                    btn.disabled = true;
+                    btn.innerHTML = `<span class="spinner"></span> ${label}`;
+                } else {
+                    btn.disabled = false;
+                }
+            }
+
+            // ── Views ──
+            function showGallery() {
+                document.getElementById("view-gallery").classList.add("active");
+                document
+                    .getElementById("view-detail")
+                    .classList.remove("active");
+                document.getElementById("btn-back").style.display = "none";
+                document.getElementById("btn-add-map").style.display = "";
+                document.getElementById("header-search").style.display = "";
+                document.getElementById("search-input").style.display = "";
+                pinModeActive = false;
+                currentMap = null;
+                // Re-use cached allMaps when navigating back; only fetch when first load
+                if (allMaps.length > 0) {
+                    renderGallery(
+                        document.getElementById("search-input").value.trim(),
+                    );
+                } else {
+                    loadGallery();
+                }
+            }
+
+            function showDetail(map) {
+                currentMap = map;
+                document
+                    .getElementById("view-gallery")
+                    .classList.remove("active");
+                document.getElementById("view-detail").classList.add("active");
+                document.getElementById("btn-back").style.display = "";
+                document.getElementById("btn-add-map").style.display = "none";
+                document.getElementById("header-search").style.display = "none";
+
+                document.getElementById("detail-title").textContent = map.name;
+                document.getElementById("detail-subtitle").textContent =
+                    new Date(map.uploaded_at).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                    }) +
+                    (map.file_size ? "  ·  " + formatBytes(map.file_size) : "");
+
+                const img = document.getElementById("detail-map-img");
+                img.src = `/uploads/${map.filename}`;
+                img.alt = map.name;
+
+                if (map.notes) {
+                    document.getElementById("map-notes-box").textContent =
+                        map.notes;
+                    document.getElementById("map-notes-section").style.display =
+                        "";
+                } else {
+                    document.getElementById("map-notes-section").style.display =
+                        "none";
+                }
+
+                setPinMode(false);
+                loadPins();
+            }
+
+            // ── Gallery ──
+            // Fetch all maps from server and store in allMaps. Never called during typing.
+            async function loadGallery(q = "") {
+                const grid = document.getElementById("gallery-grid");
+                const loading = document.getElementById("loading-gallery");
+                const empty = document.getElementById("empty-state");
+                const noRes = document.getElementById("no-results");
+
+                // Only show spinner on full (non-search) loads
+                if (!q) {
+                    loading.style.display = "block";
+                    grid.style.display = "none";
+                    empty.style.display = "none";
+                    noRes.style.display = "none";
+                }
+
+                try {
+                    const res = await fetch("/api/maps");
+                    if (!res.ok) throw new Error();
+                    allMaps = await res.json();
+                } catch {
+                    toast("Could not load maps", "error");
+                    loading.style.display = "none";
+                    return;
+                }
+
+                loading.style.display = "none";
+                renderGallery(q);
+            }
+
+            // Render the gallery from allMaps (in-memory), filtered by q.
+            // Diffs the DOM: hides/shows existing cards instead of destroying them.
+            function renderGallery(q = "") {
+                const grid = document.getElementById("gallery-grid");
+                const empty = document.getElementById("empty-state");
+                const noRes = document.getElementById("no-results");
+                const label = document.getElementById("count-label");
+
+                const lq = q.toLowerCase().trim();
+                const filtered = lq
+                    ? allMaps.filter((m) => m.name.toLowerCase().includes(lq))
+                    : allMaps;
+
+                // Update count label (always reflects total, not filtered count)
+                label.innerHTML =
+                    allMaps.length === 0
+                        ? "No maps in the archive yet."
+                        : `<strong>${allMaps.length}</strong> map${allMaps.length === 1 ? "" : "s"} in the archive` +
+                          (lq && filtered.length !== allMaps.length
+                              ? ` &nbsp;·&nbsp; <em>${filtered.length} match${filtered.length === 1 ? "" : "es"}</em>`
+                              : "");
+
+                if (allMaps.length === 0) {
+                    empty.style.display = "";
+                    grid.style.display = "none";
+                    noRes.style.display = "none";
+                    return;
+                }
+                empty.style.display = "none";
+
+                if (filtered.length === 0) {
+                    noRes.style.display = "";
+                    grid.style.display = "none";
+                    return;
+                }
+                noRes.style.display = ""; // keep hidden but don't force display:none if grid is showing
+                noRes.style.display = "none";
+                grid.style.display = "";
+
+                const filteredIds = new Set(filtered.map((m) => m.id));
+
+                // Build a map of existing card elements
+                const existing = {};
+                grid.querySelectorAll(".map-card[data-id]").forEach((el) => {
+                    existing[el.dataset.id] = el;
+                });
+
+                // Add missing cards (new maps), hide cards not in filter
+                filtered.forEach((m) => {
+                    if (!existing[m.id]) {
+                        const el = buildCard(m);
+                        grid.appendChild(el);
+                        existing[m.id] = el;
+                    } else {
+                        existing[m.id].style.display = "";
+                    }
+                });
+
+                // Hide cards not matching the filter
+                Object.keys(existing).forEach((id) => {
+                    if (!filteredIds.has(id))
+                        existing[id].style.display = "none";
+                });
+
+                // Re-order DOM to match filtered order (only moves, no re-creates)
+                filtered.forEach((m) => grid.appendChild(existing[m.id]));
+            }
+
+            function buildCard(m) {
+                const div = document.createElement("div");
+                div.className = "map-card";
+                div.dataset.id = m.id;
+                div.onclick = () => openMap(m.id);
+                div.innerHTML = `
+    <img class="thumb" src="/uploads/${m.filename}" alt="${m.name}" loading="lazy" decoding="async">
+    <div class="card-body">
+      <div class="card-name" title="${m.name}">${m.name}</div>
+      ${m.notes ? `<div class="card-note">${m.notes}</div>` : ""}
+      <div class="card-meta">
+        <span>${new Date(m.uploaded_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+        ${parseInt(m.pin_count) > 0 ? `<span class="pin-badge">${m.pin_count} pin${m.pin_count == 1 ? "" : "s"}</span>` : ""}
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="card-btn" title="Edit" onclick="startEditMap('${m.id}',event)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2l3 3-8 8H3v-3L11 2z"/></svg>
+      </button>
+      <button class="card-btn danger" title="Delete" onclick="deleteMap('${m.id}',event)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9"/></svg>
+      </button>
+    </div>`;
+                return div;
+            }
+
+            async function openMap(id) {
+                try {
+                    const res = await fetch(`/api/maps/${id}`);
+                    const map = await res.json();
+                    showDetail(map);
+                } catch {
+                    toast("Could not open map", "error");
+                }
+            }
+
+            // ── Upload / Edit Map Modal ──
+            document
+                .getElementById("file-input")
+                .addEventListener("change", function (e) {
+                    pendingUploadFiles = Array.from(e.target.files);
+                    this.value = "";
+                    if (pendingUploadFiles.length)
+                        showUploadModal(pendingUploadFiles[0]);
+                });
+
+            function showUploadModal(file) {
+                editingMapId = null;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById("modal-map-preview").src =
+                        e.target.result;
+                    document.getElementById("modal-map-preview").style.display =
+                        "";
+                };
+                reader.readAsDataURL(file);
+
+                document.getElementById("modal-map-title").textContent =
+                    pendingUploadFiles.length > 1
+                        ? `Add Map (${pendingUploadFiles.length} remaining)`
+                        : "Add Map to Archive";
+                document.getElementById("modal-map-name").value =
+                    file.name.replace(/\.[^/.]+$/, "");
+                document.getElementById("modal-map-notes").value = "";
+                document.getElementById("upload-bar").style.display = "none";
+                document.getElementById("btn-modal-map-save").textContent =
+                    "Save to Archive";
+                document.getElementById("btn-modal-map-save").disabled = false;
+                openModal("modal-map");
+            }
+
+            function startEditMap(id, e) {
+                e && e.stopPropagation();
+                const map = allMaps.find((m) => m.id === id) || currentMap;
+                if (!map) return;
+                editingMapId = id;
+                document.getElementById("modal-map-title").textContent =
+                    "Edit Map Details";
+                document.getElementById("modal-map-preview").src =
+                    `/uploads/${map.filename}`;
+                document.getElementById("modal-map-preview").style.display = "";
+                document.getElementById("modal-map-name").value = map.name;
+                document.getElementById("modal-map-notes").value =
+                    map.notes || "";
+                document.getElementById("upload-bar").style.display = "none";
+                document.getElementById("btn-modal-map-save").textContent =
+                    "Save Changes";
+                document.getElementById("btn-modal-map-save").disabled = false;
+                openModal("modal-map");
+            }
+
+            document.getElementById("btn-edit-map-meta").onclick = () => {
+                if (currentMap) startEditMap(currentMap.id);
+            };
+
+            document.getElementById("btn-modal-map-save").onclick =
+                async () => {
+                    const btn = document.getElementById("btn-modal-map-save");
+                    if (editingMapId) {
+                        // Edit mode
+                        const name = document
+                            .getElementById("modal-map-name")
+                            .value.trim();
+                        const notes = document
+                            .getElementById("modal-map-notes")
+                            .value.trim();
+                        setLoading(btn, true);
+                        try {
+                            const res = await fetch(
+                                `/api/maps/${editingMapId}`,
+                                {
+                                    method: "PUT",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({ name, notes }),
+                                },
+                            );
+                            if (!res.ok) throw new Error();
+                            const updated = await res.json();
+                            toast("Changes saved");
+                            closeModal("modal-map");
+                            // Update in-memory cache — no re-fetch needed
+                            const idx = allMaps.findIndex(
+                                (m) => m.id === editingMapId,
+                            );
+                            if (idx !== -1)
+                                allMaps[idx] = { ...allMaps[idx], ...updated };
+                            if (currentMap && currentMap.id === editingMapId) {
+                                currentMap = { ...currentMap, ...updated };
+                                showDetail(currentMap);
+                            }
+                            // Update card in DOM directly
+                            const card = document.querySelector(
+                                `.map-card[data-id="${editingMapId}"]`,
+                            );
+                            if (card) {
+                                card.querySelector(".card-name").textContent =
+                                    updated.name;
+                                const noteEl = card.querySelector(".card-note");
+                                if (updated.notes) {
+                                    if (noteEl)
+                                        noteEl.textContent = updated.notes;
+                                    else
+                                        card.querySelector(
+                                            ".card-body",
+                                        ).insertAdjacentHTML(
+                                            "afterbegin",
+                                            `<div class="card-note">${updated.notes}</div>`,
+                                        );
+                                } else if (noteEl) noteEl.remove();
+                            }
+                        } catch {
+                            toast("Save failed", "error");
+                        }
+                        setLoading(btn, false);
+                        btn.textContent = "Save Changes";
+                    } else {
+                        // Upload mode
+                        const file = pendingUploadFiles[0];
+                        const name =
+                            document
+                                .getElementById("modal-map-name")
+                                .value.trim() || file.name;
+                        const notes = document
+                            .getElementById("modal-map-notes")
+                            .value.trim();
+                        setLoading(btn, true, "Uploading…");
+                        document.getElementById("upload-bar").style.display =
+                            "";
+
+                        const formData = new FormData();
+                        formData.append("image", file);
+                        formData.append("name", name);
+                        formData.append("notes", notes);
+
+                        const xhr = new XMLHttpRequest();
+                        xhr.open("POST", "/api/maps");
+                        xhr.upload.onprogress = (e) => {
+                            if (e.lengthComputable)
+                                document.getElementById(
+                                    "upload-progress",
+                                ).value = Math.round(
+                                    (e.loaded / e.total) * 100,
+                                );
+                        };
+                        xhr.onload = () => {
+                            if (xhr.status === 201) {
+                                const newMap = JSON.parse(xhr.responseText);
+                                toast(`"${name}" added to archive`);
+                                pendingUploadFiles.shift();
+                                closeModal("modal-map");
+                                // Prepend to cache and insert card at top of grid
+                                allMaps.unshift(newMap);
+                                const grid =
+                                    document.getElementById("gallery-grid");
+                                grid.style.display = "";
+                                document.getElementById(
+                                    "empty-state",
+                                ).style.display = "none";
+                                const card = buildCard(newMap);
+                                grid.insertBefore(card, grid.firstChild);
+                                renderGallery(
+                                    document
+                                        .getElementById("search-input")
+                                        .value.trim(),
+                                );
+                                if (pendingUploadFiles.length)
+                                    setTimeout(
+                                        () =>
+                                            showUploadModal(
+                                                pendingUploadFiles[0],
+                                            ),
+                                        200,
+                                    );
+                            } else {
+                                toast("Upload failed", "error");
+                                btn.disabled = false;
+                                btn.textContent = "Save to Archive";
+                                document.getElementById(
+                                    "upload-bar",
+                                ).style.display = "none";
+                            }
+                        };
+                        xhr.onerror = () => {
+                            toast("Upload error", "error");
+                            btn.disabled = false;
+                            btn.textContent = "Save to Archive";
+                        };
+                        xhr.send(formData);
+                    }
+                };
+
+            document.getElementById("btn-modal-map-cancel").onclick = () => {
+                pendingUploadFiles = [];
+                closeModal("modal-map");
+            };
+
+            async function deleteMap(id, e) {
+                e && e.stopPropagation();
+                const map = allMaps.find((m) => m.id === id) || currentMap;
+                if (!map) return;
+                if (
+                    !confirm(
+                        `Remove "${map.name}"? This will also delete all its pins and the image file.`,
+                    )
+                )
+                    return;
+                try {
+                    const res = await fetch(`/api/maps/${id}`, {
+                        method: "DELETE",
+                    });
+                    if (!res.ok) throw new Error();
+                    toast(`"${map.name}" removed`);
+                    // Remove from in-memory cache and DOM directly — no re-fetch needed
+                    allMaps = allMaps.filter((m) => m.id !== id);
+                    const el = document.querySelector(
+                        `.map-card[data-id="${id}"]`,
+                    );
+                    if (el) el.remove();
+                    if (currentMap && currentMap.id === id) {
+                        currentMap = null;
+                        showGallery();
+                    } else {
+                        renderGallery(
+                            document
+                                .getElementById("search-input")
+                                .value.trim(),
+                        );
+                    }
+                } catch {
+                    toast("Delete failed", "error");
+                }
+            }
+
+            // ── Pins ──
+            async function loadPins() {
+                if (!currentMap) return;
+                try {
+                    const res = await fetch(`/api/maps/${currentMap.id}/pins`);
+                    currentPins = await res.json();
+                } catch {
+                    currentPins = [];
+                }
+                renderPins();
+            }
+
+            function renderPins() {
+                renderPinOverlay();
+                renderPinList();
+            }
+
+            function renderPinOverlay() {
+                const overlay = document.getElementById("pins-overlay");
+                const img = document.getElementById("detail-map-img");
+                const w = img.clientWidth;
+                const h = img.clientHeight;
+
+                overlay.setAttribute("viewBox", `0 0 ${w} ${h}`);
+                overlay.innerHTML = currentPins
+                    .map((p, i) => {
+                        const x = (parseFloat(p.x_pct) / 100) * w;
+                        const y = (parseFloat(p.y_pct) / 100) * h;
+                        return `
+      <g class="pin-group" data-id="${p.id}"
+         onmouseenter="showPinTooltip(event,'${p.id}')"
+         onmouseleave="hidePinTooltip()"
+         onclick="focusPin('${p.id}')">
+        <circle class="pin-ring" cx="${x}" cy="${y}" r="9"/>
+        <circle class="pin-dot"  cx="${x}" cy="${y}" r="7"/>
+        <text class="pin-number" x="${x}" y="${y}">${i + 1}</text>
+      </g>`;
+                    })
+                    .join("");
+            }
+
+            function renderPinList() {
+                const list = document.getElementById("pin-list");
+                if (!currentPins.length) {
+                    list.innerHTML = `<div class="pin-empty">No pins yet — click "Drop a new pin" then click on the map.</div>`;
+                    return;
+                }
+                list.innerHTML = currentPins
+                    .map(
+                        (p, i) => `
+    <div class="pin-item" id="pin-item-${p.id}" onclick="focusPin('${p.id}')">
+      <div class="pin-num">${i + 1}</div>
+      <div class="pin-info">
+        <div class="pin-road">${p.road_name}</div>
+        ${p.notes ? `<div class="pin-notes-text">${p.notes}</div>` : ""}
+      </div>
+      <div class="pin-actions">
+        <button class="pin-action-btn" title="Edit" onclick="startEditPin('${p.id}',event)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2l3 3-8 8H3v-3L11 2z"/></svg>
+        </button>
+        <button class="pin-action-btn danger" title="Delete" onclick="deletePin('${p.id}',event)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9"/></svg>
+        </button>
+      </div>
+    </div>
+  `,
+                    )
+                    .join("");
+            }
+
+            function focusPin(id) {
+                document
+                    .querySelectorAll(".pin-item")
+                    .forEach((el) => el.classList.remove("active"));
+                document
+                    .querySelectorAll(".pin-group")
+                    .forEach((el) => el.classList.remove("active"));
+                const item = document.getElementById(`pin-item-${id}`);
+                if (item) {
+                    item.classList.add("active");
+                    item.scrollIntoView({
+                        behavior: "smooth",
+                        block: "nearest",
+                    });
+                }
+                const grp = document.querySelector(
+                    `.pin-group[data-id="${id}"]`,
+                );
+                if (grp) grp.classList.add("active");
+            }
+
+            function showPinTooltip(e, id) {
+                const pin = currentPins.find((p) => p.id === id);
+                if (!pin) return;
+                const tooltip = document.getElementById("pin-tooltip");
+                const wrap = document.getElementById("map-canvas-wrap");
+                const wRect = wrap.getBoundingClientRect();
+                const img = document.getElementById("detail-map-img");
+                const x = (parseFloat(pin.x_pct) / 100) * img.clientWidth;
+                const y = (parseFloat(pin.y_pct) / 100) * img.clientHeight;
+                tooltip.textContent = pin.road_name;
+                tooltip.style.left = x + "px";
+                tooltip.style.top = y + "px";
+                tooltip.classList.add("show");
+            }
+
+            function hidePinTooltip() {
+                document.getElementById("pin-tooltip").classList.remove("show");
+            }
+
+            // ── Pin mode ──
+            function togglePinMode() {
+                setPinMode(!pinModeActive);
+            }
+
+            function setPinMode(active) {
+                pinModeActive = active;
+                const toggle = document.getElementById("pin-mode-toggle");
+                const wrap = document.getElementById("map-canvas-wrap");
+                const overlay = document.getElementById("pins-overlay");
+                const banner = document.getElementById("pin-mode-banner");
+
+                toggle.classList.toggle("active", active);
+                wrap.classList.toggle("view-mode", !active);
+                overlay.classList.toggle("pin-mode", active);
+                banner.classList.toggle("visible", active);
+            }
+
+            // Click on map to place pin
+            document
+                .getElementById("map-canvas-wrap")
+                .addEventListener("click", function (e) {
+                    if (!pinModeActive) return;
+                    if (e.target.closest(".pin-group")) return; // clicked existing pin
+
+                    const img = document.getElementById("detail-map-img");
+                    const rect = img.getBoundingClientRect();
+                    const x_pct = ((e.clientX - rect.left) / rect.width) * 100;
+                    const y_pct = ((e.clientY - rect.top) / rect.height) * 100;
+
+                    if (x_pct < 0 || x_pct > 100 || y_pct < 0 || y_pct > 100)
+                        return;
+
+                    pendingPin = {
+                        x_pct: parseFloat(x_pct.toFixed(3)),
+                        y_pct: parseFloat(y_pct.toFixed(3)),
+                    };
+                    editingPinId = null;
+                    document.getElementById("modal-pin-title").textContent =
+                        "Name this road";
+                    document.getElementById("modal-pin-name").value = "";
+                    document.getElementById("modal-pin-notes").value = "";
+                    document.getElementById("btn-modal-pin-save").textContent =
+                        "Save Pin";
+                    document.getElementById("btn-modal-pin-save").disabled =
+                        false;
+                    openModal("modal-pin");
+                    setTimeout(
+                        () => document.getElementById("modal-pin-name").focus(),
+                        50,
+                    );
+                });
+
+            document.getElementById("btn-modal-pin-save").onclick =
+                async () => {
+                    const btn = document.getElementById("btn-modal-pin-save");
+                    const road_name = document
+                        .getElementById("modal-pin-name")
+                        .value.trim();
+                    const notes = document
+                        .getElementById("modal-pin-notes")
+                        .value.trim();
+                    if (!road_name) {
+                        document.getElementById("modal-pin-name").focus();
+                        return;
+                    }
+
+                    setLoading(btn, true);
+                    try {
+                        if (editingPinId) {
+                            const res = await fetch(
+                                `/api/maps/${currentMap.id}/pins/${editingPinId}`,
+                                {
+                                    method: "PUT",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({ road_name, notes }),
+                                },
+                            );
+                            if (!res.ok) throw new Error();
+                            toast("Pin updated");
+                        } else {
+                            const res = await fetch(
+                                `/api/maps/${currentMap.id}/pins`,
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                        road_name,
+                                        notes,
+                                        ...pendingPin,
+                                    }),
+                                },
+                            );
+                            if (!res.ok) throw new Error();
+                            toast(`"${road_name}" pinned`);
+                            setPinMode(false);
+                        }
+                        pendingPin = null;
+                        editingPinId = null;
+                        closeModal("modal-pin");
+                        await loadPins();
+                    } catch {
+                        toast("Save failed", "error");
+                    }
+
+                    btn.disabled = false;
+                    btn.textContent = editingPinId
+                        ? "Save Changes"
+                        : "Save Pin";
+                };
+
+            function startEditPin(id, e) {
+                e && e.stopPropagation();
+                const pin = currentPins.find((p) => p.id === id);
+                if (!pin) return;
+                editingPinId = id;
+                pendingPin = null;
+                document.getElementById("modal-pin-title").textContent =
+                    "Edit Road Pin";
+                document.getElementById("modal-pin-name").value = pin.road_name;
+                document.getElementById("modal-pin-notes").value =
+                    pin.notes || "";
+                document.getElementById("btn-modal-pin-save").textContent =
+                    "Save Changes";
+                document.getElementById("btn-modal-pin-save").disabled = false;
+                openModal("modal-pin");
+                setTimeout(
+                    () => document.getElementById("modal-pin-name").focus(),
+                    50,
+                );
+            }
+
+            async function deletePin(id, e) {
+                e && e.stopPropagation();
+                const pin = currentPins.find((p) => p.id === id);
+                if (!confirm(`Remove pin for "${pin?.road_name}"?`)) return;
+                try {
+                    const res = await fetch(
+                        `/api/maps/${currentMap.id}/pins/${id}`,
+                        { method: "DELETE" },
+                    );
+                    if (!res.ok) throw new Error();
+                    toast("Pin removed");
+                    await loadPins();
+                } catch {
+                    toast("Delete failed", "error");
+                }
+            }
+
+            document.getElementById("btn-modal-pin-cancel").onclick = () => {
+                pendingPin = null;
+                editingPinId = null;
+                closeModal("modal-pin");
+            };
+
+            // ── Full view lightbox ──
+            document.getElementById("btn-view-full").onclick = () => {
+                if (!currentMap) return;
+                document.getElementById("lightbox-img").src =
+                    `/uploads/${currentMap.filename}`;
+                document.getElementById("lightbox-cap").textContent =
+                    currentMap.name;
+                document.getElementById("lightbox").classList.add("open");
+            };
+            document
+                .getElementById("lightbox")
+                .addEventListener("click", (e) => {
+                    if (e.target === document.getElementById("lightbox"))
+                        document
+                            .getElementById("lightbox")
+                            .classList.remove("open");
+                });
+
+            // ── Modal helpers ──
+            function openModal(id) {
+                document.getElementById(id).classList.add("open");
+            }
+            function closeModal(id) {
+                document.getElementById(id).classList.remove("open");
+            }
+
+            document
+                .getElementById("modal-map")
+                .addEventListener("click", (e) => {
+                    if (e.target === document.getElementById("modal-map")) {
+                        pendingUploadFiles = [];
+                        closeModal("modal-map");
+                    }
+                });
+            document
+                .getElementById("modal-pin")
+                .addEventListener("click", (e) => {
+                    if (e.target === document.getElementById("modal-pin")) {
+                        pendingPin = null;
+                        editingPinId = null;
+                        closeModal("modal-pin");
+                    }
+                });
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") {
+                    document
+                        .getElementById("lightbox")
+                        .classList.remove("open");
+                    pendingUploadFiles = [];
+                    pendingPin = null;
+                    editingPinId = null;
+                    closeModal("modal-map");
+                    closeModal("modal-pin");
+                    if (pinModeActive) setPinMode(false);
+                }
+            });
+
+            // ── Search — instant client-side filter, no server round-trip while typing ──
+            document
+                .getElementById("search-input")
+                .addEventListener("input", (e) => {
+                    renderGallery(e.target.value.trim());
+                });
+
+            // ── Re-render pins on image resize ──
+            const resizeObs = new ResizeObserver(() => {
+                if (currentMap) renderPinOverlay();
+            });
+            resizeObs.observe(document.getElementById("detail-map-img"));
+
+            // ── Utils ──
+            function formatBytes(b) {
+                if (b < 1024) return b + " B";
+                if (b < 1048576) return Math.round(b / 1024) + " KB";
+                return (b / 1048576).toFixed(1) + " MB";
+            }
+
+            // ── Init ──
+            showGallery();
+        </script>
+    </body>
+</html>

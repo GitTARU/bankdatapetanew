@@ -1,4 +1,3 @@
-
             // ── State ──
             let allMaps = [];
             let currentMap = null;
@@ -696,7 +695,7 @@
                     clearTimeout(searchTimer);
                     searchTimer = setTimeout(
                         () => loadGallery(e.target.value.trim()),
-                        280,
+                        500,
                     );
                 });
 
